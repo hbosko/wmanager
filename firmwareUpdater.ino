@@ -83,7 +83,6 @@ void update_started() {
   notifyClients(notify_evt,"Firmware update starting");
 
   #ifdef ENABLE_MQTT
-    //publishMqtt(mqtt_firmware_status, fw_update(FW_status_START, "0").c_str());
     notifyClients(mqtt_firmware_status, fw_update(FW_status_START, "0").c_str());
   #endif
 
@@ -95,7 +94,6 @@ void update_finished() {
     notifyClients(notify_evt,"Firmware update done!");
 
   #ifdef ENABLE_MQTT
-    //publishMqtt(mqtt_firmware_status, fw_update(FW_status_FINISH, "0").c_str());
     notifyClients(mqtt_firmware_status, fw_update(FW_status_FINISH, "0").c_str());
   #endif
 
@@ -112,10 +110,9 @@ void update_progress(int cur, int total) {
   
   #ifdef ENABLE_MQTT
     static int last_reported_percent = -1;
-    //  obvestilo vsakih 10%
+    //  status every 10%
     if (percent % 10 == 0 && percent != last_reported_percent) { 
       last_reported_percent = percent;
-      //publishMqtt(mqtt_firmware_status, fw_update(FW_status_PROGRESS, sendData).c_str());
       notifyClients(mqtt_firmware_status, fw_update(FW_status_PROGRESS, sendData).c_str());
     }
   #endif
@@ -129,7 +126,6 @@ void update_error(int err) {
   
   Serial.printf("FW CALLBACK: HTTP update fatal error code %d\n", err);
   #ifdef ENABLE_MQTT
-    //publishMqtt(mqtt_firmware_status, fw_update(FW_status_ERROR, sendData).c_str());
     notifyClients(mqtt_firmware_status, fw_update(FW_status_ERROR, sendData).c_str());
   #endif
   OTA_fw_update_running = false;
@@ -139,7 +135,6 @@ void update_failed(const char* err) {
   DEBUG_PRINT("FW update_failed Error: ");
   DEBUG_PRINTLN(err);
   #ifdef ENABLE_MQTT
-    //publishMqtt(mqtt_firmware_status, fw_update(FW_status_FAILED, err).c_str());
     notifyClients(mqtt_firmware_status, fw_update(FW_status_FAILED, err).c_str());
   #endif
   OTA_fw_update_running = false;

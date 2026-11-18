@@ -1,5 +1,3 @@
-//#define ARDUINOJSON_ENABLE_DEPRECATED 1
-
 #include <Arduino.h>
 #include <array>
 #include <StreamString.h>

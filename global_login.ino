@@ -2,12 +2,12 @@ const char login_html[] PROGMEM = "<!DOCTYPE html><html lang=\"sl\"><head><meta 
 
 unsigned long lastActiveSesion = 0;
 
-void osveziZetonSeje() {
+void makeToken() {
   globalSessionToken = random(100000, 999999);
 }
 
 void tokenTimeOut() {
-  osveziZetonSeje();
+  makeToken();
   client_loged_out = 1;
 }
 
@@ -71,7 +71,7 @@ SecurityFilter globalSecurityHandler;
 
 void init_global_login() {
   randomSeed(analogRead(0)); 
-  osveziZetonSeje();
+  makeToken();
 
   server.addHandler(&globalSecurityHandler);
 
@@ -86,7 +86,7 @@ void init_global_login() {
 
     if(request->hasArg("usr") && request->hasArg("pswd")) {
       if(request->arg("usr") == login_username && request->arg("pswd") == login_password) {
-        osveziZetonSeje();
+        makeToken();
         client_loged_out = 0;
         
         AsyncWebServerResponse *response = request->beginResponse(303); 

@@ -23,7 +23,6 @@ void subscribeMqtt(const char *topic) {
   }
 }
 
-
 void init_MQTT_async(){
   #if defined(ESP32)
     WiFi.onEvent(WiFiEvent);
@@ -40,7 +39,7 @@ void init_MQTT_async(){
 }
 
 void connectToMqtt() {
-  DEBUG_PRINTLN("=> Povezovanje na MQTT...");
+  DEBUG_PRINTLN("=> Connecting to MQTT...");
   mqttClient.connect();
 }
 
@@ -131,6 +130,5 @@ void onMqttMessage(const char* topic, char* payload, AsyncMqttClientMessagePrope
   */
 
 }
-
 
 #endif

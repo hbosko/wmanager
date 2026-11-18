@@ -1,5 +1,5 @@
 #ifdef ENABLE_BLINK
-
+//TEST
 void init_ESP_PIN(){
   for (uint8_t i = 0; i < ESP_pin_size; i++) {
     pinMode(ESP_pin[i], OUTPUT);

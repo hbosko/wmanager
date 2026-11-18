@@ -53,6 +53,7 @@ char pass[65] = "";
   uint16_t mqttPort = mqtt_port;
   const char* mqttUser = mqtt_user;
   const char* mqttPass = mqtt_password;
+  const char* mqttPrefix; //test;
 #endif
 
 #define wifiPath "/wifi.json"

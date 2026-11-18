@@ -9,7 +9,7 @@ void init_webSockets() {
 
 void wsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len){
   
- // if (apActive) { return;  } // disable websocket if in AP mode! BufferOverFlow... OOM!
+  if (apActive) { return;  } // disable websocket if in AP mode! BufferOverFlow... OOM!
 
   if (client == nullptr) return;
 

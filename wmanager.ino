@@ -1,4 +1,3 @@
-// disable DEGUG on live product!!
 #define ENABLE_DEBUG_service 1
 
 #define ENABLE_webSockets_service 1
@@ -26,10 +25,10 @@
 #include "ESP_settings.h"
 #include "library.h"
 //#include "prototype.h"
-#ifdef ENABLE_UDP
-  #include "UDP_indexHTML.h"
-  #include "UDP_cs.h"
-#endif
+  #ifdef ENABLE_UDP
+    #include "UDP_indexHTML.h"
+    #include "UDP_cs.h"
+  #endif
 #include "enum_stuff.h"
 #include "helpers.h"
 #include "SVC_FS_editor.h"
@@ -38,7 +37,6 @@
 #include "SVC_Scanner.h"
 #include "MOD_esp_pin.h"
 #include "WManagerCustom.h"
-
 
 void setup() {
   #ifdef ENABLE_DEBUG
@@ -113,7 +111,6 @@ void loop() {
     loop_time_1h = currentMillis;
     tokenTimeOut();
   }
-  
 
   if (currentMillis - loop_time_30 >= interval_30s) {
     loop_time_30 = currentMillis;

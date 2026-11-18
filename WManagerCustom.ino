@@ -46,7 +46,7 @@ void initAP_path() {
     if (n == -1) {
       request->send(200, "text/html", F("<div>⏳ Refresh.ing... <br><br><a href='#' class='scan-btn' onclick='osveziSeznam(); return false;'>SCAN WiF</a></div>"));
     } else if (n == -2 || n == 0) {
-      request->send(200, "text/html", F("<div>❌ No WifI in range. <br><br><a href='#' class='scan-btn' onclick='sproziInOsvezi(); return false;'>reTRY</a></div>"));
+      request->send(200, "text/html", F("<div>❌ No WifI in range. <br><br><a href='#' class='scan-btn' onclick='osvezi(); return false;'>reTRY</a></div>"));
     } else {
       
       AsyncResponseStream *response = request->beginResponseStream("text/html");
@@ -54,7 +54,7 @@ void initAP_path() {
       int indices[n];
       for (int i = 0; i < n; i++) indices[i] = i;
 
-      //  sortiranje
+      //  sort
       for (int i = 0; i < n; i++) {
         for (int j = i + 1; j < n; j++) {
           if (WiFi.RSSI(indices[j]) > WiFi.RSSI(indices[i])) {
@@ -63,7 +63,7 @@ void initAP_path() {
         }
       }
 
-      // Filtriranje duplikatov
+      // Filtrir duplikats
       for (int i = 0; i < n; i++) {
         if (indices[i] == -1) continue;
         String cssid = WiFi.SSID(indices[i]);
@@ -96,7 +96,6 @@ void initAP_path() {
       WiFi.scanDelete();
     }
   });
-
 
   server.on("/generate_204", HTTP_ANY, [](AsyncWebServerRequest *request) {request->redirect(localIPURL);});
   server.on("/gen_204", HTTP_ANY, [](AsyncWebServerRequest *request) {request->redirect(localIPURL);});
@@ -429,9 +428,9 @@ const char HTTP_SCRIPT[] PROGMEM =
   "<script>"
   "function c(l){var s=l.querySelector('span');document.getElementById('ssid_id').value=s.innerText||s.textContent;document.getElementById('pass_id').focus();}"
   "function togglePass(i){var x=document.getElementById(i);x.type=x.type==='password'?'text':'password';}"
-  "function sproziInOsvezi(){var d=document.getElementById('wifi-list-container');if(d)d.innerHTML='<div>⏳ Iskanje omrežij...</div>';fetch('/scan-async').then(()=>setTimeout(osveziSeznam,5000));}"
+  "function osvezi(){var d=document.getElementById('wifi-list-container');if(d)d.innerHTML='<div>⏳ Iskanje omrežij...</div>';fetch('/scan-async').then(()=>setTimeout(osveziSeznam,5000));}"
   "function osveziSeznam(){var d=document.getElementById('wifi-list-container');fetch('/get-networks').then(r=>r.text()).then(h=>{if(d)d.innerHTML=h;});}"
-  //"window.onload=function(){if(document.getElementById('wifi-list-container')){sproziInOsvezi();}};"
+  //"window.onload=function(){if(document.getElementById('wifi-list-container')){osvezi();}};" //auto scan when page loads
   "</script>";
 
 const char HTTP_STYLE[] PROGMEM = 
@@ -463,7 +462,6 @@ void SendHTMLStream(AsyncResponseStream *response) {
 
   response->print(FPSTR(HTTP_SCRIPT));
   response->print(FPSTR(HTTP_STYLE));
-  //response->print(FPSTR(HTTP_STYLE_HOME));
 
   response->print(F("<meta charset=\"UTF-8\">\n</head><body>\n"));
   response->print(F("<div class=\"container\">\n"));
@@ -538,7 +536,7 @@ void SendHTMLStream(AsyncResponseStream *response) {
   if (apActive == true) {
     response->print(F("<form class=\"scan-form\">\n<h3 style=\"color:#4aa3df;\">WiFi in range</h3>\n"));
     response->print(F("<div id=\"wifi-list-container\"><div style=\"color:#a0aec0; font-size:0.9rem; text-align:center; padding:10px;\">Pritisnite REFRESH za iskanje omrežij.</div></div>\n"));
-    response->print(F("<a href=\"#\" class=\"scan-btn\" onclick=\"sproziInOsvezi(); return false;\">Refresh</a>\n"));
+    response->print(F("<a href=\"#\" class=\"scan-btn\" onclick=\"osvezi(); return false;\">Refresh</a>\n"));
     response->print(F("</form>\n"));
   }
 
@@ -589,12 +587,10 @@ String parseWifi() {
   output.reserve(512);
   
   serializeJson(jsonBuffer, output);
-
   DEBUG_PRINTLN(output.c_str());
 
   return output;
 }
-
 
 
 bool read_Wifi_from_FS() {
@@ -629,7 +625,6 @@ bool read_Wifi_from_FS() {
           snprintf(WMconfig.WMmqttPass, sizeof(WMconfig.WMmqttPass), "%s", json[mqqtPasswdParam].as<const char*>());
         #endif
 
-
         return true;
       } else {
         DEBUG_PRINTLN("Failed to load WManager json config, parsing error.");
@@ -656,7 +651,7 @@ void scanWifi_SSID(AsyncResponseStream *response, int n) {
   int indices[n];
   for (int i = 0; i < n; i++) indices[i] = i;
 
-  // Sortiranje po RSSI
+  // Sort RSSI
   for (int i = 0; i < n; i++) {
     for (int j = i + 1; j < n; j++) {
       if (WiFi.RSSI(indices[j]) > WiFi.RSSI(indices[i])) {
@@ -665,7 +660,7 @@ void scanWifi_SSID(AsyncResponseStream *response, int n) {
     }
   }
 
-  // Filtriranje duplikatov
+  // Filter duplicates
   for (int i = 0; i < n; i++) {
     if (indices[i] == -1) continue;
     String cssid = WiFi.SSID(indices[i]);
@@ -690,4 +685,3 @@ void scanWifi_SSID(AsyncResponseStream *response, int n) {
     response->print(F("%)</a>\n"));
   }
 }
-

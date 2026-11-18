@@ -1,5 +1,5 @@
 
-const char* FIRMWARE_VERSION = "3.0.4";
+const char* FIRMWARE_VERSION = "0.0.1";
 
 const char* hardCode_SSID    = "SSiD";
 const char* hardCode_PASS    = "Pass";
@@ -34,11 +34,9 @@ const char* ws_path          = "/ws";
   char softAPname[32] = ""; 
   static char chipID_buffer[20] = {0};
 
-
   #define MDNS_SERVICE_NAME device_name
   #define MDNS_PROTOCOL "tcp"
   #define MDNS_PORT 5600
-
 
 #if defined(ESP8266)
   void init_ChipID() {
@@ -57,7 +55,6 @@ const char* ws_path          = "/ws";
   #define chipID_str chipID_buffer
 
 #endif
-
 
 
 static const char mqtt_firmware[]        = "firmware";
@@ -87,8 +84,6 @@ static const char mqtt_cmd[]             = "cmd";
 static const char mqtt_reboot[]          = "reboot";
 
 //URL's
-
-// protected sites
 const char* const esp_settings_path       = "/esp.json";
 
 const char* const serverURL_BRD_sett_html = "/brd";
@@ -96,16 +91,16 @@ const char* const serverURL_BRD_sett_json = "/brd/json";
 const char* const serverURL_BRD_sett_save = "/brd/save";
 
 const char* const serverURL_ESP_cmd       = "/esp/cmd";
-const char* const serverURL_ESP_CP        = "/esp/cp"; //Control panel-ish
+const char* const serverURL_ESP_CP        = "/esp/cp";
 const char* const serverURL_ESP_info      = "/esp/info";
-const char* const serverURL_ESP_fw        = "/esp/fw"; // pwd
+const char* const serverURL_ESP_fw        = "/esp/fw";
 
 const char* const serverURL_scan_wifi     = "/scan/wifi";
 const char* const serverURL_scan_i2c      = "/scan/i2c";
 const char* const serverURL_scan_OneWire  = "/scan/1w";
 
 // Wifimanager
-const char* const serverURL_edit_ap       = "/wifi/edit_ap"; // pwd
+const char* const serverURL_edit_ap       = "/wifi/edit_ap";
 const char* const serverURL_wifi_save     = "/wifi/save_ap";
 
 //UDP
@@ -210,7 +205,6 @@ const unsigned long interval_30m  = 30 * 60 * Seconds;
 
 const unsigned long interval_1h   = 3600UL * Seconds;
 const unsigned long interval_6h   = 21600UL * Seconds;
-
 
 const unsigned long QTR_SECOND   = Seconds / 4;
 const unsigned long HALF_SECOND  = Seconds / 2;

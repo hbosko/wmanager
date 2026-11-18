@@ -203,5 +203,3 @@ void initCleanBoardName() {
   
   snprintf(clean_board_name, sizeof(clean_board_name), "%s", b.c_str());
 }
-
-

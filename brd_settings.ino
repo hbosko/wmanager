@@ -1,7 +1,7 @@
 
 const char* custom_types[] = {
   "Smart", 
-  "dumb"
+  "Dumb"
 };
 
 const char* custom_sub_types[] = {
@@ -13,7 +13,6 @@ const char* custom_sub_types[] = {
 
 const char* default_type = "WMANAGER";
 const char* default_subtype = "wmanager";
-
 
 const size_t CUSTOM_TYPES_size = sizeof(custom_types) / sizeof(custom_types[0]);
 const size_t CUSTOM_SUB_TYPES_size = sizeof(custom_sub_types) / sizeof(custom_sub_types[0]);
@@ -113,30 +112,30 @@ void brd_json(Print& output) {
 
 
 void init_MODULE_pins() {
-  DEBUG_PRINTLN("Inicializacija strojne opreme in pinov...");
+  DEBUG_PRINTLN("Init GPIO pins..");
 
   if (SDA_pin >= 0 && SCL_pin >= 0) {
     MODULE_I2C = 1;
-    DEBUG_PRINTF("I2C vodilo -> SDA: %d, SCL: %d\r\n", SDA_pin, SCL_pin);
+    DEBUG_PRINTF("I2C -> SDA: %d, SCL: %d\r\n", SDA_pin, SCL_pin);
     Wire.begin(SDA_pin, SCL_pin);
   } else {
     MODULE_I2C = 0;
-    DEBUG_PRINTLN("I2C onemogočen (SDA ali SCL je nastavljen na -1).");
+    DEBUG_PRINTLN("I2C disabled (SDA or SCL -1).");
   }
 
   // 4. DALLAS SENZOR
   /*
   if (Dallass_pin >= 0) {
     MODULE_OneWire = 1;
-    DEBUG_PRINTF("Dallas senzor na pinu: %d\r\n", Dallass_pin);
+    DEBUG_PRINTF("Dallas senzor: %d\r\n", Dallass_pin);
     
     oneWire.begin(Dallass_pin); 
     sensors.begin();
     
-    DEBUG_PRINTLN("Dallas senzor uspešno zagnan.");
+    DEBUG_PRINTLN("Dallas pin OK.");
   } else {
     MODULE_OneWire = 0;
-    DEBUG_PRINTLN("Dallas senzor je onemogočen.");
+    DEBUG_PRINTLN("Dallas disabled.");
   }
 */
 }
