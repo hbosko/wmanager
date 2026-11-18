@@ -1,0 +1,142 @@
+// disable DEGUG on live product!!
+#define ENABLE_DEBUG_service 1
+
+#define ENABLE_webSockets_service 1
+#define ENABLE_MQTT_service 1
+#define ENABLE_OTA_service 0
+#define ENABLE_MDNS_service 1
+#define ENABLE_UDP_service 0
+
+#define ENABLE_FS_Editor_service 1
+#define FIRMWARE_UPDATE_service 0 // too lazy to finishh...
+
+// 1 = progmem, 0 = spiffs (upload index.html.gz)
+#define include_indexHTML 0
+
+#define PASSWD_PROTECTED_service 0
+
+//builtInLed blink
+#define ENABLE_BLINK_service 0
+
+#if include_indexHTML == 1
+  #include "index_HTML.h"
+#endif
+
+#include "define.h"
+#include "ESP_settings.h"
+#include "library.h"
+//#include "prototype.h"
+#ifdef ENABLE_UDP
+  #include "UDP_indexHTML.h"
+  #include "UDP_cs.h"
+#endif
+#include "enum_stuff.h"
+#include "helpers.h"
+#include "SVC_FS_editor.h"
+#include "SVC_MQTT.h"
+#include "SVC_OTA.h"
+#include "SVC_Scanner.h"
+#include "MOD_esp_pin.h"
+#include "WManagerCustom.h"
+
+
+void setup() {
+  #ifdef ENABLE_DEBUG
+    Serial.begin(115200);
+    DEBUG_PRINTLN("Debugging enabled!");
+    DEBUG_PRINTLN("-----");
+  #endif
+
+  init_ChipID();
+  initCleanBoardName();
+
+  #if defined(ESP8266)
+    if(!LittleFS.begin()){ DEBUG_PRINTLN("=<=< Error LittleFS"); } 
+    else { DEBUG_PRINTLN("=> ESP8266 LittleFS mounted successfully"); }
+  #elif defined(ESP32)
+    if(!LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED)){ DEBUG_PRINTLN("=<=< Error LittleFS"); return; } 
+    else { DEBUG_PRINTLN("=> ESP32 LittleFS mounted successfully"); }
+  #endif
+  
+  init_esp_settings();
+
+    #ifdef PASSWD_PROTECTED
+      init_global_login();
+    #endif
+
+  initWMConfigDefaults();
+  init_CUSTOM_WIFI();
+  init_firmwareUpdater();
+  
+  WIFIMANAGER_server_path();
+  init_WEB_server();
+
+  #ifdef ENABLE_UDP
+    udp_cs_init();
+  #endif
+
+  #ifdef ENABLE_BLINK
+    init_ESP_PIN();
+  #endif
+
+  #ifdef ENABLE_FS_Editor
+    init_FS_editor();
+  #endif
+  #ifdef ENABLE_webSockets
+    init_webSockets();
+  #endif
+  #ifdef ENABLE_MQTT
+    init_MQTT_async();
+  #endif
+
+}
+
+void loop() {
+
+  loop_CUSTOM_WIFI();
+
+  #ifdef ENABLE_webSockets
+    #ifdef ESP8266
+      ws.cleanupClients(3);
+    #else
+      ws.cleanupClients();
+    #endif
+  #endif
+
+  #ifdef ENABLE_MQTT1
+    MQTT_LOOP();
+  #endif
+
+  unsigned long currentMillis = millis();
+
+  if (currentMillis - loop_time_1h >= interval_1h) {
+    loop_time_1h = currentMillis;
+    tokenTimeOut();
+  }
+  
+
+  if (currentMillis - loop_time_30 >= interval_30s) {
+    loop_time_30 = currentMillis;
+    notifyClients(mqtt_ESPinfo, ESPinfo().c_str());
+
+  }
+
+  #ifdef FIRMWARE_UPDATE
+    httpUpdate_loop();
+  #endif
+
+  #ifdef ENABLE_UDP
+    handleUdpSync_loop();
+  #endif
+
+  #ifdef ENABLE_BLINK
+    wifiConnectingLedStatus();
+    run_ESP_Blink();
+  #endif
+
+  client_state();
+  esp_reboot_timer();
+
+  delay(1);
+}
+

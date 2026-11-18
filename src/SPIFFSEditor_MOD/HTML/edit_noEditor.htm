@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP Upravitelj Datotek</title>
+    <style>
+        :root {
+            --bg-color: #1e1e1e;
+            --sidebar-bg: #252526;
+            --topbar-bg: #3c3c3c;
+            --text-color: #cccccc;
+            --accent-color: #007acc;
+            --hover-bg: #2a2d2e;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; hieght: 100vh; height: 100vh; overflow: hidden; }
+
+        #topbar { background: var(--topbar-bg); padding: 8px 15px; display: flex; gap: 10px; align-items: center; border-bottom: 1px solid #555; }
+        input[type="text"], input[type="file"] { background: #333; color: #fff; border: 1px solid #555; padding: 4px 8px; border-radius: 4px; }
+        button { background: var(--accent-color); color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-weight: 600; }
+        button:hover { filter: brightness(1.2); }
+
+        #main-container { display: flex; flex: 1; overflow: hidden; }
+        #sidebar { width: 250px; background: var(--sidebar-bg); border-right: 1px solid #333; padding: 10px; overflow-y: auto; }
+        #content-area { flex: 1; display: flex; justify-content: center; align-items: center; background: #111; position: relative; }
+
+        .file-list { list-style: none; }
+        .file-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border-radius: 4px; cursor: pointer; margin-bottom: 2px; }
+        .file-item:hover { background: var(--hover-bg); }
+        .file-name { display: flex; align-items: center; gap: 8px; }
+        .btn-delete { background: #a12020; padding: 2px 6px; font-size: 11px; }
+
+        #preview-img { max-width: 90%; max-height: 90%; object-fit: contain; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        #loader { display: none; position: absolute; border: 4px solid #f3f3f3; border-top: 4px solid var(--accent-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="topbar">
+        <button onclick="loadFiles()">🔄 Osveži</button>
+        <input type="file" id="file-input">
+        <button onclick="uploadFile()">📤 Naloži</button>
+        <input type="text" id="new-filename" placeholder="nova_datoteka.txt">
+        <button onclick="createFile()">➕ Ustvari</button>
+    </div>
+
+    <div id="main-container">
+        <div id="sidebar">
+            <ul id="files" class="file-list"></ul>
+        </div>
+        <div id="content-area">
+            <div id="loader"></div>
+            <div id="preview-container">👉 Izberite datoteko za predogled</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/edit';
+        const loader = document.getElementById('loader');
+
+        function toggleLoader(show) { loader.style.display = show ? 'block' : 'none'; }
+
+        // 1. Pridobivanje seznama datotek (Moderni Async/Fetch)
+        async function loadFiles() {
+            toggleLoader(true);
+            try {
+                const response = await fetch(`${API_URL}?list=/`);
+                if (!response.ok) throw new Error('Napaka pri branju podatkov.');
+                const files = await response.json();
+                
+                const listElement = document.getElementById('files');
+                listElement.innerHTML = '';
+
+                // Razvrščanje: najprej abecedno
+                files.sort((a, b) => a.name.localeCompare(b.name));
+
+                files.forEach(file => {
+                    if (file.type === 'file') {
+                        const li = document.createElement('li');
+                        li.className = 'file-item';
+                        li.innerHTML = `
+                            <div class="file-name" onclick="previewFile('${file.name}')">
+                                📄 <span>${file.name} (${formatBytes(file.size)})</span>
+                            </div>
+                            <button class="btn-delete" onclick="deleteFile('${file.name}', event)">Briši</button>
+                        `;
+                        listElement.appendChild(li);
+                    }
+                });
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                toggleLoader(false);
+            }
+        }
+
+        // 2. Predogled slik ali prenos datotek
+        function previewFile(filename) {
+            const container = document.getElementById('preview-container');
+            const ext = filename.split('.').pop().toLowerCase();
+            const fileUrl = `${API_URL}?edit=${filename}&_ts=${Date.now()}`;
+
+            if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'ico'].includes(ext)) {
+                container.innerHTML = `<img id="preview-img" src="${fileUrl}" alt="${filename}">`;
+            } else {
+                container.innerHTML = `
+                    <div style="text-align:center;">
+                        <p style="margin-bottom:15px;">Tekstovne datoteke ali binarni podatki</p>
+                        <a href="${API_URL}?download=${filename}" style="color:var(--accent-color); font-weight:bold; text-decoration:none; font-size:18px;">⬇️ Prenesi datoteko</a>
+                    </div>`;
+            }
+        }
+
+        // 3. Nalaganje datotek na ESP
+        async function uploadFile() {
+            const input = document.getElementById('file-input');
+            if (input.files.length === 0) return alert('Izberite datoteko!');
+
+            toggleLoader(true);
+            const formData = new FormData();
+            formData.append("data", input.files[0], "/" + input.files[0].name);
+
+            try {
+                const response = await fetch(API_URL, { method: 'POST', body: formData });
+                if (response.ok) {
+                    input.value = '';
+                    loadFiles();
+                } else {
+                    alert('Nalaganje ni uspelo.');
+                }
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                toggleLoader(false);
+            }
+        }
+
+        // 4. Ustvarjanje nove prazne datoteke
+        async function createFile() {
+            const nameInput = document.getElementById('new-filename');
+            let name = nameInput.value.trim();
+            if (!name) return alert('Vnesite ime datoteke!');
+            if (!name.startsWith('/')) name = '/' + name;
+
+            toggleLoader(true);
+            const formData = new FormData();
+            formData.append("path", name);
+
+            try {
+                const response = await fetch(API_URL, { method: 'PUT', body: formData });
+                if (response.ok) {
+                    nameInput.value = '';
+                    loadFiles();
+                } else {
+                    alert('Ustvarjanje ni uspelo.');
+                }
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                toggleLoader(false);
+            }
+        }
+
+        // 5. Brisanje datoteke
+        async function deleteFile(filename, event) {
+            event.stopPropagation(); // Prepreči sprožitev predogleda ob kliku na gumb
+            if (!confirm(`Ali res želite izbrisati ${filename}?`)) return;
+
+            toggleLoader(true);
+            const formData = new FormData();
+            formData.append("path", "/" + filename);
+
+            try {
+                const response = await fetch(API_URL, { method: 'DELETE', body: formData });
+                if (response.ok) {
+                    document.getElementById('preview-container').innerHTML = '👉 Izberite datoteko za predogled';
+                    loadFiles();
+                } else {
+                    alert('Brisanje ni uspelo.');
+                }
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                toggleLoader(false);
+            }
+        }
+
+        // Pomožna funkcija za lepši prikaz velikosti
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024, sizes = ['Bytes', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        // Začetni zagon ob nalaganju strani
+        window.onload = loadFiles;
+    </script>
+</body>
+</html>
