@@ -7,7 +7,7 @@ const char* custom_types[] = {
 const char* custom_sub_types[] = {
   "yes", 
   "No", 
-  "Ostalo"
+  "etc"
 };
 
 

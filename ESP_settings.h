@@ -14,7 +14,7 @@ const char* mqtt_password    = "free";
 const char* login_username   = "admin";
 const char* login_password   = "admin";
 
-const char* sketch_file      = "c,anager.ino";
+const char* sketch_file      = "wmanager.ino";
 
 const char* ws_path          = "/ws";
 
